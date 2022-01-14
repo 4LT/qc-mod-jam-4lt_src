@@ -14,6 +14,8 @@ float FOURL_TURRET_ACTIVE_PERIOD = 0.1;
 // Number of times to look for targetted player
 float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_PERIOD);
 
+float FOURL_BARREL_LENGTH = 28;
+
 // From LaunchLaser
 float FOURL_LASER_SPEED = 600;
 
@@ -44,7 +46,7 @@ float() FourL_TurretTargetHidden = {
     return TRUE;
 };
 
-vector() FourL_TurretLeadTarget = {
+vector(vector muzzle_pos) FourL_TurretLeadTarget = {
     vector vel = self.enemy.velocity;
     vector targ_pos, roots;
     float a, b, c, dt;
@@ -53,10 +55,10 @@ vector() FourL_TurretLeadTarget = {
         targ_pos = self.enemy.origin;
     } else {
         a = vel * vel - FOURL_LASER_SPEED * FOURL_LASER_SPEED;
-        b = 2 * vel * (self.enemy.origin - self.origin);
+        b = 2 * vel * (self.enemy.origin - muzzle_pos);
         c = self.enemy.origin * self.enemy.origin
-            + self.origin * self.origin
-            - 2 * self.enemy.origin * self.origin; 
+            + muzzle_pos * muzzle_pos
+            - 2 * self.enemy.origin * muzzle_pos; 
 
         roots = fourl_quadratic(a, b, c);
         dt = roots_y;
@@ -66,9 +68,19 @@ vector() FourL_TurretLeadTarget = {
     return normalize(targ_pos - self.origin);
 };
 
-void() FourL_TurretFire = {
+// Approximate where the muzzle position will need to be
+// (assume target won't move)
+//
+// Reasonable approx. if target distance >> barrel length
+vector(float barrel_len) FourL_MuzzlePos = {
+    return normalize(self.enemy.origin - self.origin) * barrel_len
+        + self.origin;
+};
+
+void(float barrel_len) FourL_TurretFire = {
+    vector muzzle_pos = FourL_MuzzlePos(barrel_len);
+    LaunchLaser(muzzle_pos, FourL_TurretLeadTarget(muzzle_pos));
     sound(self, CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM);
-    LaunchLaser(self.origin, FourL_TurretLeadTarget());
 };
 
 vector() FourL_TurretUpdateTarget = {
@@ -141,7 +153,7 @@ void() FourL_TurretThink = {
     // Try to fire if target was found and visible
     if (target_dir != '0 0 0') {
         if (time > self.pausetime) {
-            FourL_TurretFire();
+            FourL_TurretFire(0);
             self.pausetime = time + self.wait;
         }
     }
@@ -193,17 +205,41 @@ vector(vector dest_angles) FourL_Turret2ComputeDeltaAngles = {
         dest_angles - self.goalentity.angles);
 };
 
+float() FourL_Turret2Rotate;
+
 void() FourL_Turret2Think = {
-    vector dest_dir, dest_angles, dest_angles2, dangles, dangles2, travel_time,
-        apply_avel, apply_angles;
-    float max_dangle, max_dangle2;
+    float target_locked = FALSE;
 
     if (!self.enemy) {
         self.enemy = checkclient();
     }
 
-    dest_dir = normalize(self.enemy.origin - self.origin);
-    dest_angles = vectoangles(dest_dir);
+    target_locked = FourL_Turret2Rotate();
+    
+    if (target_locked) {
+    } 
+    
+
+    self.think = FourL_Turret2Think;
+    self.nextthink = time + FOURL_TURRET_ACTIVE_PERIOD;
+};
+
+float() FourL_Turret2Rotate = {
+    vector dest_angles, dest_angles2, dangles, dangles2, travel_time,
+        apply_avel, apply_angles, target_dir, muzzle_pos;
+    float max_dangle, max_dangle2, snap_pitch, snap_yaw;
+
+    if (!self.enemy) {
+        return FALSE;
+    }
+
+    muzzle_pos = FourL_MuzzlePos(FOURL_BARREL_LENGTH);
+    target_dir = FourL_TurretLeadTarget(muzzle_pos);
+
+    snap_pitch = FALSE;
+    snap_yaw = FALSE;
+
+    dest_angles = vectoangles(target_dir);
     dest_angles2_x = -(dest_angles_x - 270) + 270;
     dest_angles2_y = dest_angles_y < 180
         ? dest_angles_y + 180
@@ -236,6 +272,7 @@ void() FourL_Turret2Think = {
         apply_angles_z = 0;
         apply_avel_x = 0;
         FourL_Turret2ApplyAngles(apply_angles);
+        snap_pitch = TRUE;
     }
 
     if (travel_time_y < FOURL_TURRET_ACTIVE_PERIOD) {
@@ -244,12 +281,11 @@ void() FourL_Turret2Think = {
         apply_angles_z = 0;
         apply_avel_y = 0;
         FourL_Turret2ApplyAngles(apply_angles);
+        snap_yaw = TRUE;
     }
 
     FourL_Turret2ApplyAngVel(apply_avel);
-
-    self.think = FourL_Turret2Think;
-    self.nextthink = time + FOURL_TURRET_ACTIVE_PERIOD;
+    return snap_pitch && snap_yaw;
 };
 
 void() func_lead_turret = {
