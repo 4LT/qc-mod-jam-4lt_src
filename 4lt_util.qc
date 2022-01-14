@@ -1,0 +1,1 @@
+void() fourl_noop = {};

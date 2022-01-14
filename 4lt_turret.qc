@@ -1,15 +1,17 @@
 // -- Forward declarations --
 
 vector(float a, float b, float c) fourl_quadratic;
+float(float x) fourl_sign;
+vector(vector in) fourl_normalize_delta_angles;
 
 // -- Constants --
 
 float FOURL_TURRET_WAKE_RADIUS = 800;
 float FOURL_TURRET_TRACK_RADIUS = 1200;
-float FOURL_TURRET_SEARCH_DELAY = 0.3;
-float FOURL_TURRET_ACTIVE_DELAY = 0.1;
+float FOURL_TURRET_SEARCH_PERIOD = 0.3;
+float FOURL_TURRET_ACTIVE_PERIOD = 0.1;
 // Number of times to look for targetted player
-float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_DELAY);
+float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_PERIOD);
 
 // From LaunchLaser
 float FOURL_LASER_SPEED = 600;
@@ -145,9 +147,9 @@ void() FourL_TurretThink = {
 
     // Set up next think; save frames if there's no target
     if (self.enemy) {
-        self.nextthink = time + FOURL_TURRET_ACTIVE_DELAY;
+        self.nextthink = time + FOURL_TURRET_ACTIVE_PERIOD;
     } else {
-        self.nextthink = time + FOURL_TURRET_SEARCH_DELAY;
+        self.nextthink = time + FOURL_TURRET_SEARCH_PERIOD;
     }
     self.think = FourL_TurretThink;
 };
@@ -168,5 +170,99 @@ void() point_lead_turret = {
     //self.movetype = MOVETYPE_FLY;
 
     self.think = FourL_TurretThink;
-    self.nextthink = FOURL_TURRET_SEARCH_DELAY;
+    self.nextthink = FOURL_TURRET_SEARCH_PERIOD;
+};
+
+void(vector my_angles) FourL_Turret2ApplyAngles = {
+    self.angles = my_angles;
+    self.angles_x = 0;
+    self.angles_z = 0;
+    self.goalentity.angles = my_angles;
+};
+
+void(vector angvel) FourL_Turret2ApplyAngVel = {
+    self.avelocity = angvel;
+    self.avelocity_x = 0;
+    self.avelocity_z = 0;
+    self.goalentity.avelocity = angvel;
+};
+
+void() FourL_Turret2Think = {
+    vector dest_dir, dest_angles, dangles, travel_time, apply_avel,
+        apply_angles;
+
+    if (!self.enemy) {
+        self.enemy = checkclient();
+    }
+
+    dest_dir = normalize(self.enemy.origin - self.origin);
+    dest_angles = vectoangles(dest_dir);
+
+    self.think = FourL_Turret2Think;
+    self.nextthink = time + FOURL_TURRET_ACTIVE_PERIOD;
+
+    dangles = fourl_normalize_delta_angles(
+            dest_angles - self.goalentity.angles);
+    travel_time_x = fabs(dangles_x / self.speed);
+    travel_time_y = fabs(dangles_y / self.speed);
+
+    apply_avel_x = self.speed * fourl_sign(dangles_x);
+    apply_avel_y = self.speed * fourl_sign(dangles_y);
+    apply_avel_z = 0;
+
+    if (travel_time_x < FOURL_TURRET_ACTIVE_PERIOD) {
+        apply_angles_x = dest_angles_x;
+        apply_angles_y = self.goalentity.angles_y;
+        apply_angles_z = 0;
+        apply_avel_x = 0;
+        FourL_Turret2ApplyAngles(apply_angles);
+    }
+
+    if (travel_time_y < FOURL_TURRET_ACTIVE_PERIOD) {
+        apply_angles_x = self.goalentity.angles_x;
+        apply_angles_y = dest_angles_y;
+        apply_angles_z = 0;
+        apply_avel_y = 0;
+        FourL_Turret2ApplyAngles(apply_angles);
+    }
+
+    FourL_Turret2ApplyAngVel(apply_avel);
+};
+
+void() fourl_barrel = {
+    setmodel(self, "progs/dog.mdl");
+    self.avelocity = '0 0 0';
+    self.solid = SOLID_NOT;
+    self.movetype = MOVETYPE_FLY;
+};
+
+void() func_lead_turret = {
+    entity barrel, tself;
+
+	precache_model("progs/demon.mdl");
+    precache_model("progs/dog.mdl");
+    setmodel(self, "progs/demon.mdl");
+    self.avelocity = '0 0 0';
+    self.solid = SOLID_NOT;
+    self.movetype = MOVETYPE_FLY;
+
+    if (self.speed == 0) {
+        self.speed = 100;
+    }
+    
+    tself = self;
+    barrel = spawn();
+    self = barrel;
+    fourl_barrel();
+    self = tself;
+
+    barrel.origin = self.origin;
+    barrel.owner = self;
+    self.goalentity = barrel;
+
+
+    FourL_Turret2ApplyAngles([360, self.angles_y, 0]);
+
+    self.think = FourL_Turret2Think;
+    self.nextthink = 0.3;
 };
