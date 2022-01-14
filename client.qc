@@ -1371,6 +1371,13 @@ void(entity targ, entity attacker) ClientObituary =
 				bprint (" blew up\n");
 				return;
 			}
+			if (
+				attacker.classname == "point_lead_turret"
+				|| attacker.classname == "func_lead_turret"
+			) {
+				bprint(" failed to obtain clearance\n");
+				return;
+			}
 			if (attacker.solid == SOLID_BSP && attacker != world)
 			{	
 				bprint (" was squished\n");

@@ -281,14 +281,3 @@ void() func_lead_turret = {
     self.think = FourL_Turret2Think;
     self.nextthink = 0.3;
 };
-
-__wrap void(entity targ, entity attacker) ClientObituary = {
-    if (
-        targ.classname == "player" && attacker.classname == "point_lead_turret"
-    ) {
-        bprint(targ.netname);
-        bprint(" failed to obtain clearance\n");
-    } else {
-        prior(targ, attacker);
-    }
-};
