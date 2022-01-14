@@ -592,6 +592,6 @@
 [
 ]
 
-@PointClass size(16 16 16) = func_lead_turret : "Turret prototype 2"
+@PointClass size(-32 -32 -32, 32 32 16) = func_lead_turret : "Turret prototype 2"
 [
 ]

@@ -258,8 +258,9 @@ void() func_lead_turret = {
 	precache_model("progs/demon.mdl");
     precache_model("progs/dog.mdl");
     setmodel(self, "progs/demon.mdl");
+	setsize (self, '-32 -32 -32', '32 32 16');		
     self.avelocity = '0 0 0';
-    self.solid = SOLID_NOT;
+    self.solid = SOLID_BBOX;
     self.movetype = MOVETYPE_FLY;
 
     if (self.speed == 0) {
