@@ -77,9 +77,8 @@ vector(float barrel_len) FourL_MuzzlePos = {
         + self.origin;
 };
 
-void(float barrel_len) FourL_TurretFire = {
-    vector muzzle_pos = FourL_MuzzlePos(barrel_len);
-    LaunchLaser(muzzle_pos, FourL_TurretLeadTarget(muzzle_pos));
+void(vector pos, vector dir) FourL_TurretFire = {
+    LaunchLaser(pos, dir);
     sound(self, CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM);
 };
 
@@ -153,7 +152,7 @@ void() FourL_TurretThink = {
     // Try to fire if target was found and visible
     if (target_dir != '0 0 0') {
         if (time > self.pausetime) {
-            FourL_TurretFire(0);
+            FourL_TurretFire(self.origin, FourL_TurretLeadTarget(self.origin));
             self.pausetime = time + self.wait;
         }
     }
@@ -205,36 +204,43 @@ vector(vector dest_angles) FourL_Turret2ComputeDeltaAngles = {
         dest_angles - self.goalentity.angles);
 };
 
-float() FourL_Turret2Rotate;
+float(vector apprx_muzzle_pos) FourL_Turret2Rotate;
 
 void() FourL_Turret2Think = {
+    vector muzzle_pos;
     float target_locked = FALSE;
 
     if (!self.enemy) {
         self.enemy = checkclient();
     }
 
-    target_locked = FourL_Turret2Rotate();
+    muzzle_pos = FourL_MuzzlePos(FOURL_BARREL_LENGTH);
+    target_locked = FourL_Turret2Rotate(muzzle_pos);
     
     if (target_locked) {
+        if (time > self.pausetime) {
+            FourL_TurretFire(
+                muzzle_pos,
+                FourL_TurretLeadTarget(muzzle_pos)
+            );
+            self.pausetime = time + self.wait;
+        }
     } 
-    
 
     self.think = FourL_Turret2Think;
     self.nextthink = time + FOURL_TURRET_ACTIVE_PERIOD;
 };
 
-float() FourL_Turret2Rotate = {
+float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     vector dest_angles, dest_angles2, dangles, dangles2, travel_time,
-        apply_avel, apply_angles, target_dir, muzzle_pos;
+        apply_avel, apply_angles, target_dir;
     float max_dangle, max_dangle2, snap_pitch, snap_yaw;
 
     if (!self.enemy) {
         return FALSE;
     }
 
-    muzzle_pos = FourL_MuzzlePos(FOURL_BARREL_LENGTH);
-    target_dir = FourL_TurretLeadTarget(muzzle_pos);
+    target_dir = FourL_TurretLeadTarget(apprx_muzzle_pos);
 
     snap_pitch = FALSE;
     snap_yaw = FALSE;
@@ -298,6 +304,10 @@ void() func_lead_turret = {
     self.avelocity = '0 0 0';
     self.solid = SOLID_BBOX;
     self.movetype = MOVETYPE_FLY;
+   
+    if (self.wait == 0) {
+        self.wait = 0.3;
+    }
 
     if (self.speed == 0) {
         self.speed = 100;
