@@ -57,6 +57,22 @@ float(float x) fourl_sign = {
     }
 };
 
+float(float a, float b) fourl_max = {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+};
+
+float(float a, float b) fourl_min = {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+};
+
 float(float a, float b) fourl_mod = {
     return a - floor(a / b) * b;
 };
