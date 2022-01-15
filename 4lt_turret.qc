@@ -126,11 +126,7 @@ vector() FourL_TurretUpdateTarget = {
             miss_enemy = FourL_TurretTargetHidden();
 
             if (!miss_enemy) {
-                direction = normalize(
-                    self.enemy.origin
-                    + self.enemy.view_ofs
-                    - self.origin
-                );
+                direction = normalize(self.enemy.origin - self.origin);
             }
         }
     } else {
