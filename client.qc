@@ -1372,8 +1372,8 @@ void(entity targ, entity attacker) ClientObituary =
 				return;
 			}
 			if (
-				attacker.classname == "point_lead_turret"
-				|| attacker.classname == "func_lead_turret"
+				attacker.classname == "trap_turret_point"
+				|| attacker.classname == "trap_turret_solid"
 			) {
 				bprint(" failed to obtain clearance\n");
 				return;

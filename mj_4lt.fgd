@@ -588,10 +588,10 @@
 @PointClass size(16 16 16) = misc_noisemaker : "Debug entity: continuously plays enforcer sounds" []
 @PointClass size(16 16 16) = viewthing : "Debug entity: fake player model" []
 
-@PointClass size(16 16 16) = point_lead_turret : "Turret prototype"
+@PointClass size(16 16 16) = trap_turret_point : "Turret prototype"
 [
 ]
 
-@PointClass size(-32 -32 -32, 32 32 8) = func_lead_turret : "Turret prototype 2"
+@PointClass size(-32 -32 -32, 32 32 8) = trap_turret_solid : "Rotating ceiling turret"
 [
 ]

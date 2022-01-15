@@ -163,7 +163,7 @@ void() FourL_TurretThink = {
     self.think = FourL_TurretThink;
 };
 
-void() point_lead_turret = {
+void() trap_turret_point = {
 	precache_model("progs/s_light.spr");
     precache_sound("enforcer/enfire.wav");
     precache_sound("enforcer/enfstop.wav");
@@ -314,7 +314,7 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     return snap_pitch && snap_yaw && pitch_in_bounds;
 };
 
-void() func_lead_turret = {
+void() trap_turret_solid = {
     entity barrel;
 
 	precache_model("progs/demon.mdl");
