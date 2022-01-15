@@ -9,7 +9,7 @@ float(float a, float b) fourl_max;
 
 float FOURL_TURRET_WAKE_RADIUS = 800;
 float FOURL_TURRET_TRACK_RADIUS = 1200;
-float FOURL_TURRET_SEARCH_PERIOD = 0.3;
+float FOURL_TURRET_SEARCH_PERIOD = 0.1;
 float FOURL_TURRET_ACTIVE_PERIOD = 0.1;
 // Number of times to look for targetted player
 float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_PERIOD);
@@ -72,9 +72,8 @@ vector(vector muzzle_pos) FourL_TurretLeadTarget = {
 // (assume target won't move)
 //
 // Reasonable approx. if target distance >> barrel length
-vector(float barrel_len) FourL_MuzzlePos = {
-    return normalize(self.enemy.origin - self.origin) * barrel_len
-        + self.origin;
+vector(float barrel_len, vector target_dir) FourL_MuzzlePos = {
+    return target_dir * barrel_len + self.origin;
 };
 
 void(vector pos, vector dir) FourL_TurretFire = {
@@ -207,28 +206,36 @@ vector(vector dest_angles) FourL_Turret2ComputeDeltaAngles = {
 float(vector apprx_muzzle_pos) FourL_Turret2Rotate;
 
 void() FourL_Turret2Think = {
-    vector muzzle_pos;
+    vector muzzle_pos, target_dir;
     float target_locked = FALSE;
 
-    if (!self.enemy) {
-        self.enemy = checkclient();
+    target_dir = FourL_TurretUpdateTarget();
+
+    if (target_dir == '0 0 0') {
+        self.avelocity = '0 0 0';
+        self.goalentity.avelocity = '0 0 0';
+    } else {
+        muzzle_pos = FourL_MuzzlePos(FOURL_BARREL_LENGTH, target_dir);
+        target_locked = FourL_Turret2Rotate(muzzle_pos);
+        
+        if (target_locked) {
+            if (time > self.pausetime) {
+                FourL_TurretFire(
+                    muzzle_pos,
+                    FourL_TurretLeadTarget(muzzle_pos)
+                );
+                self.pausetime = time + self.wait;
+            }
+        } 
     }
 
-    muzzle_pos = FourL_MuzzlePos(FOURL_BARREL_LENGTH);
-    target_locked = FourL_Turret2Rotate(muzzle_pos);
-    
-    if (target_locked) {
-        if (time > self.pausetime) {
-            FourL_TurretFire(
-                muzzle_pos,
-                FourL_TurretLeadTarget(muzzle_pos)
-            );
-            self.pausetime = time + self.wait;
-        }
-    } 
-
+    // Set up next think; save frames if there's no target
+    if (self.enemy) {
+        self.nextthink = time + FOURL_TURRET_ACTIVE_PERIOD;
+    } else {
+        self.nextthink = time + FOURL_TURRET_SEARCH_PERIOD;
+    }
     self.think = FourL_Turret2Think;
-    self.nextthink = time + FOURL_TURRET_ACTIVE_PERIOD;
 };
 
 float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
