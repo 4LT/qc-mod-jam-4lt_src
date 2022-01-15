@@ -14,6 +14,8 @@ float FOURL_TURRET_ACTIVE_PERIOD = 0.1;
 // Number of times to look for targetted player
 float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_PERIOD);
 
+// Limit pitch angle of barrel
+float FOURL_BARREL_PITCH_LIM = 0;
 float FOURL_BARREL_LENGTH = 28;
 
 // From LaunchLaser
@@ -241,7 +243,8 @@ void() FourL_Turret2Think = {
 float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     vector dest_angles, dest_angles2, dangles, dangles2, travel_time,
         apply_avel, apply_angles, target_dir;
-    float max_dangle, max_dangle2, snap_pitch, snap_yaw;
+    float max_dangle, max_dangle2, snap_pitch, snap_yaw, pitch_in_bounds,
+          pitch_lower, pitch_upper;
 
     if (!self.enemy) {
         return FALSE;
@@ -253,6 +256,20 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     snap_yaw = FALSE;
 
     dest_angles = vectoangles(target_dir);
+    pitch_lower = FOURL_BARREL_PITCH_LIM;
+    pitch_upper = 180 - FOURL_BARREL_PITCH_LIM;
+
+    if (dest_angles_x > pitch_lower && dest_angles_x < pitch_upper) {
+        pitch_in_bounds = FALSE;
+        if (dest_angles_x > 90) {
+            dest_angles_x = pitch_upper;
+        } else {
+            dest_angles_x = pitch_lower;
+        }
+    } else {
+        pitch_in_bounds = TRUE;
+    }
+
     dest_angles2_x = -(dest_angles_x - 270) + 270;
     dest_angles2_y = dest_angles_y < 180
         ? dest_angles_y + 180
@@ -298,7 +315,7 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     }
 
     FourL_Turret2ApplyAngVel(apply_avel);
-    return snap_pitch && snap_yaw;
+    return snap_pitch && snap_yaw && pitch_in_bounds;
 };
 
 void() func_lead_turret = {
