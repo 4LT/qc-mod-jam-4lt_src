@@ -11,6 +11,7 @@ float FOURL_TURRET_WAKE_RADIUS = 1500;
 float FOURL_TURRET_TRACK_RADIUS = 2000;
 float FOURL_TURRET_SEARCH_PERIOD = 0.1;
 float FOURL_TURRET_ACTIVE_PERIOD = 0.1;
+float FOURL_TURRET_TURN_SPEED = 100;
 // Number of times to look for targetted player
 float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_PERIOD);
 
@@ -193,6 +194,18 @@ void() trap_turret_point = {
     self.state = FOURL_STATE_WAITING;
     self.use = FourL_TurretUse;
 
+    if (self.waitmin <= 0) {
+        self.waitmin = FOURL_TURRET_WAKE_RADIUS;
+    }
+
+    if (self.waitmax <= 0) {
+        self.waitmax = FOURL_TURRET_TRACK_RADIUS;
+    }
+
+    if (self.waitmax < self.waitmin) {
+        self.waitmax = self.waitmin;
+    }
+
     self.nextthink = 0.3;
     self.think = self.think1 = FourL_TurretThink;
 
@@ -352,13 +365,22 @@ void() trap_turret_solid = {
     self.state = FOURL_STATE_WAITING;
     self.enemy = world;
     self.use = FourL_TurretUse;
+    self.speed = FOURL_TURRET_TURN_SPEED;
    
     if (self.wait == 0) {
         self.wait = 0.3;
     }
 
-    if (self.speed == 0) {
-        self.speed = 100;
+    if (self.waitmin <= 0) {
+        self.waitmin = FOURL_TURRET_WAKE_RADIUS;
+    }
+
+    if (self.waitmax <= 0) {
+        self.waitmax = FOURL_TURRET_TRACK_RADIUS;
+    }
+
+    if (self.waitmax < self.waitmin) {
+        self.waitmax = self.waitmin;
     }
     
     barrel = spawn();
