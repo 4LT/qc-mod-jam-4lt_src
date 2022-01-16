@@ -588,7 +588,7 @@
 @PointClass size(16 16 16) = misc_noisemaker : "Debug entity: continuously plays enforcer sounds" []
 @PointClass size(16 16 16) = viewthing : "Debug entity: fake player model" []
 
-@BaseClass base(Appearflags, Target, Targetname) = LeadTurret
+@BaseClass base(Appearflags, Target, Targetname, Angle) = LeadTurret
 [
     wait(float) : "Min. time between shots" : 0.3
     spawnflags(flags) = [ 1: "Start off" : 0 ]
