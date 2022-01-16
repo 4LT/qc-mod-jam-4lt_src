@@ -120,9 +120,9 @@ vector() FourL_TurretUpdateTarget = {
     direction = displacement / distance;
 
     if (self.enemy) {
-        in_range = distance < FOURL_TURRET_TRACK_RADIUS;
+        in_range = distance < self.waitmax;
     } else {
-        in_range = distance < FOURL_TURRET_WAKE_RADIUS;
+        in_range = distance < self.waitmin;
     }
 
     traced = world;
