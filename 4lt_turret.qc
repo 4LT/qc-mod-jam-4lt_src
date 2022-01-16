@@ -21,12 +21,18 @@ float FOURL_BARREL_LENGTH = 28;
 // From LaunchLaser
 float FOURL_LASER_SPEED = 600;
 
+float FOURL_STATE_ASLEEP = 0;
+float FOURL_STATE_WAITING = 1;
+float FOURL_STATE_TARGETTING = 2;
+float FOURL_STATE_TARGET_HIDDEN = 3;
+
 void(entity target_player) FourL_TurretSetTarget = {
     self.enemy = target_player;
     self.cnt = FOURL_TURRET_FORGET_CT;
+    self.state = FOURL_STATE_TARGETTING;
 };
 
-float() FourL_TurretTargetHidden = {
+void() FourL_TurretTargetUpdateHidden = {
     entity traced, target;
 
     // Look for a new target
@@ -35,17 +41,19 @@ float() FourL_TurretTargetHidden = {
     traced = trace_ent;
 
     if (traced.classname == "player") {
+        // sets state to TARGETTING
         FourL_TurretSetTarget(traced);
-        return FALSE;
+        return;
     }
 
     self.cnt-= 1;
 
     if (self.cnt <= 0) {
         self.enemy = world;
+        self.state = FOURL_STATE_WAITING;
+    } else {
+        self.state = FOURL_STATE_TARGET_HIDDEN;
     }
-
-    return TRUE;
 };
 
 vector(vector muzzle_pos) FourL_TurretLeadTarget = {
@@ -87,7 +95,6 @@ vector() FourL_TurretUpdateTarget = {
     vector displacement, direction;
     float distance;
     float in_range;
-    float miss_enemy = FALSE;
     entity target, traced;
 
     if (self.enemy) {
@@ -113,21 +120,17 @@ vector() FourL_TurretUpdateTarget = {
         traced = trace_ent;
     } else {
         if (self.enemy) {
-            FourL_TurretTargetHidden();
+            FourL_TurretTargetUpdateHidden();
         }
 
-        return '0 0 0';
+        return direction;
     }
 
     if (self.enemy) {
         if (traced.classname == "player") {
             FourL_TurretSetTarget(traced);
         } else {
-            miss_enemy = FourL_TurretTargetHidden();
-
-            if (!miss_enemy) {
-                direction = normalize(self.enemy.origin - self.origin);
-            }
+            FourL_TurretTargetUpdateHidden();
         }
     } else {
         if (traced.classname == "player") {
@@ -135,7 +138,7 @@ vector() FourL_TurretUpdateTarget = {
         }
     }
 
-    if (self.enemy && !miss_enemy) {
+    if (self.enemy) {
         return direction;
     } else {
         return '0 0 0';
@@ -148,7 +151,7 @@ void() FourL_TurretThink = {
 
     // Try to fire if target was found and visible
     if (target_dir != '0 0 0') {
-        if (time > self.pausetime) {
+        if (time > self.pausetime && self.state == FOURL_STATE_TARGETTING) {
             FourL_TurretFire(self.origin, FourL_TurretLeadTarget(self.origin));
             self.pausetime = time + self.wait;
         }
@@ -176,7 +179,7 @@ void() trap_turret_point = {
 
     self.pausetime = 0;
     self.enemy = world;
-    //self.movetype = MOVETYPE_FLY;
+    self.state = FOURL_STATE_WAITING;
 
     self.think = FourL_TurretThink;
     self.nextthink = FOURL_TURRET_SEARCH_PERIOD;
@@ -217,7 +220,10 @@ void() FourL_Turret2Think = {
         target_locked = FourL_Turret2Rotate(muzzle_pos);
         
         if (target_locked) {
-            if (time > self.pausetime) {
+            if (
+                time > self.pausetime
+                && self.state == FOURL_STATE_TARGETTING
+            ) {
                 FourL_TurretFire(
                     muzzle_pos,
                     FourL_TurretLeadTarget(muzzle_pos)
@@ -324,6 +330,7 @@ void() trap_turret_solid = {
     self.avelocity = '0 0 0';
     self.solid = SOLID_BBOX;
     self.movetype = MOVETYPE_FLY;
+    self.state = FOURL_STATE_WAITING;
    
     if (self.wait == 0) {
         self.wait = 0.3;
