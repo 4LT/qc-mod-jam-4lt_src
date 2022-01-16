@@ -339,8 +339,11 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
 void() trap_turret_solid = {
     entity barrel;
 
+    precache_sound("enforcer/enfire.wav");
+    precache_sound("enforcer/enfstop.wav");
 	precache_model("progs/demon.mdl");
     precache_model("progs/dog.mdl");
+    precache_model("progs/laser.mdl");
     setmodel(self, "progs/demon.mdl");
 	setsize (self, '-32 -32 -32', '32 32 8');		
     self.avelocity = '0 0 0';
