@@ -62,6 +62,7 @@ void() FourL_TurretTargetUpdateHidden = {
 void() FourL_TurretUse = {
     if (self.think == self.think1) {
         self.think = SUB_Null;
+        self.avelocity = '0 0 0';
     } else {
         self.think = self.think1;
         self.think();
