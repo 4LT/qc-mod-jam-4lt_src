@@ -591,6 +591,7 @@
 @BaseClass base(Appearflags, Target, Targetname) = LeadTurret
 [
     wait(float) : "Min. time between shots" : 0.3
+    spawnflags(flags) = [ 1: "Start off" : 0 ]
 ]
 
 @PointClass size(16 16 16) base(LeadTurret) = trap_turret_point : "Turret prototype"

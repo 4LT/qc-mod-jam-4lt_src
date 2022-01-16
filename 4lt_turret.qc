@@ -26,6 +26,8 @@ float FOURL_STATE_WAITING = 1;
 float FOURL_STATE_TARGETTING = 2;
 float FOURL_STATE_TARGET_HIDDEN = 3;
 
+float FOURL_FLAG_START_OFF = 1;
+
 void(entity target_player) FourL_TurretSetTarget = {
     self.enemy = target_player;
     self.cnt = FOURL_TURRET_FORGET_CT;
@@ -53,6 +55,15 @@ void() FourL_TurretTargetUpdateHidden = {
         self.state = FOURL_STATE_WAITING;
     } else {
         self.state = FOURL_STATE_TARGET_HIDDEN;
+    }
+};
+
+void() FourL_TurretUse = {
+    if (self.think == self.think1) {
+        self.think = SUB_Null;
+    } else {
+        self.think = self.think1;
+        self.think();
     }
 };
 
@@ -163,7 +174,7 @@ void() FourL_TurretThink = {
     } else {
         self.nextthink = time + FOURL_TURRET_SEARCH_PERIOD;
     }
-    self.think = FourL_TurretThink;
+    self.think = self.think1;
 };
 
 void() trap_turret_point = {
@@ -180,9 +191,14 @@ void() trap_turret_point = {
     self.pausetime = 0;
     self.enemy = world;
     self.state = FOURL_STATE_WAITING;
+    self.use = FourL_TurretUse;
 
-    self.think = FourL_TurretThink;
-    self.nextthink = FOURL_TURRET_SEARCH_PERIOD;
+    self.nextthink = 0.3;
+    self.think = self.think1 = FourL_TurretThink;
+
+    if (self.spawnflags & FOURL_FLAG_START_OFF) {
+        self.think = SUB_Null;
+    }
 };
 
 void(vector my_angles) FourL_Turret2ApplyAngles = {
@@ -331,6 +347,8 @@ void() trap_turret_solid = {
     self.solid = SOLID_BBOX;
     self.movetype = MOVETYPE_FLY;
     self.state = FOURL_STATE_WAITING;
+    self.enemy = world;
+    self.use = FourL_TurretUse;
    
     if (self.wait == 0) {
         self.wait = 0.3;
@@ -348,9 +366,12 @@ void() trap_turret_solid = {
     barrel.owner = self;
     self.goalentity = barrel;
 
-
     FourL_Turret2ApplyAngles(self.angles);
 
-    self.think = FourL_Turret2Think;
+    self.think = self.think1 = FourL_Turret2Think;
     self.nextthink = 0.3;
+
+    if (self.spawnflags & FOURL_FLAG_START_OFF) {
+        self.think = SUB_Null;
+    }
 };
