@@ -7,8 +7,8 @@ float(float a, float b) fourl_max;
 
 // -- Constants --
 
-float FOURL_TURRET_WAKE_RADIUS = 800;
-float FOURL_TURRET_TRACK_RADIUS = 1200;
+float FOURL_TURRET_WAKE_RADIUS = 1500;
+float FOURL_TURRET_TRACK_RADIUS = 2000;
 float FOURL_TURRET_SEARCH_PERIOD = 0.1;
 float FOURL_TURRET_ACTIVE_PERIOD = 0.1;
 // Number of times to look for targetted player
