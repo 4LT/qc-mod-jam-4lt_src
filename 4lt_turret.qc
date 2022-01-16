@@ -178,11 +178,11 @@ void() FourL_TurretThink = {
 };
 
 void() trap_turret_point = {
-	precache_model("progs/s_light.spr");
+    precache_model("progs/s_light.spr");
     precache_sound("enforcer/enfire.wav");
     precache_sound("enforcer/enfstop.wav");
     precache_model("progs/laser.mdl");
-	setmodel(self, "progs/s_light.spr");
+    setmodel(self, "progs/s_light.spr");
 
     if (self.wait == 0) {
         self.wait = 0.3;
@@ -341,11 +341,11 @@ void() trap_turret_solid = {
 
     precache_sound("enforcer/enfire.wav");
     precache_sound("enforcer/enfstop.wav");
-	precache_model("progs/demon.mdl");
+    precache_model("progs/demon.mdl");
     precache_model("progs/dog.mdl");
     precache_model("progs/laser.mdl");
     setmodel(self, "progs/demon.mdl");
-	setsize (self, '-32 -32 -32', '32 32 8');		
+    setsize (self, '-32 -32 -32', '32 32 8');       
     self.avelocity = '0 0 0';
     self.solid = SOLID_BBOX;
     self.movetype = MOVETYPE_FLY;
