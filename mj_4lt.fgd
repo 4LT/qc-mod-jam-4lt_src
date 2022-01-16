@@ -588,10 +588,16 @@
 @PointClass size(16 16 16) = misc_noisemaker : "Debug entity: continuously plays enforcer sounds" []
 @PointClass size(16 16 16) = viewthing : "Debug entity: fake player model" []
 
-@PointClass size(16 16 16) = trap_turret_point : "Turret prototype"
+@BaseClass base(Appearflags, Target, Targetname) = LeadTurret
+[
+    wait(float) : "Min. time between shots" : 0.3
+]
+
+@PointClass size(16 16 16) base(LeadTurret) = trap_turret_point : "Turret prototype"
 [
 ]
 
-@PointClass size(-32 -32 -32, 32 32 8) = trap_turret_solid : "Rotating ceiling turret"
+@PointClass size(-32 -32 -32, 32 32 8) base(LeadTurret) = trap_turret_solid : "Rotating ceiling turret"
 [
+    speed(float) : "Rotation speed in deg/sec" : 100
 ]
