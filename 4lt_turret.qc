@@ -62,7 +62,6 @@ void() FourL_TurretTargetUpdateHidden = {
 void() FourL_TurretUse = {
     if (self.think == self.think1) {
         self.think = SUB_Null;
-        self.avelocity = '0 0 0';
     } else {
         self.think = self.think1;
         self.think();
@@ -350,6 +349,12 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     return snap_pitch && snap_yaw && pitch_in_bounds;
 };
 
+
+void() FourL_Turret2Use = {
+    FourL_TurretUse();
+    FourL_Turret2ApplyAngVel('0 0 0');
+};
+
 void() trap_turret_solid = {
     entity barrel;
 
@@ -365,7 +370,7 @@ void() trap_turret_solid = {
     self.movetype = MOVETYPE_FLY;
     self.state = FOURL_STATE_WAITING;
     self.enemy = world;
-    self.use = FourL_TurretUse;
+    self.use = FourL_Turret2Use;
     self.speed = FOURL_TURRET_TURN_SPEED;
    
     if (self.wait == 0) {
