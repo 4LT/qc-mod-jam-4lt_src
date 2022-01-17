@@ -600,6 +600,6 @@
 [
 ]
 
-@PointClass size(-32 -32 -32, 32 32 8) base(LeadTurret, Angle) = trap_turret_solid : "Rotating ceiling turret"
+@PointClass size(-16 -16 -16, 16 16 8) base(LeadTurret, Angle) model({ "path": ":progs/4lt/barrel.mdl" }) = trap_turret_solid : "Rotating ceiling turret"
 [
 ]

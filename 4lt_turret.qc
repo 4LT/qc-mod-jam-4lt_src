@@ -17,7 +17,7 @@ float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_PERIOD);
 
 // Limit pitch angle of barrel
 float FOURL_BARREL_PITCH_LIM = 0;
-float FOURL_BARREL_LENGTH = 28;
+float FOURL_BARREL_LENGTH = 24;
 
 // From LaunchLaser
 float FOURL_LASER_SPEED = 600;
@@ -360,11 +360,11 @@ void() trap_turret_solid = {
 
     precache_sound("enforcer/enfire.wav");
     precache_sound("enforcer/enfstop.wav");
-    precache_model("progs/demon.mdl");
-    precache_model("progs/dog.mdl");
+    precache_model("progs/4lt/base.mdl");
+    precache_model("progs/4lt/barrel.mdl");
     precache_model("progs/laser.mdl");
-    setmodel(self, "progs/demon.mdl");
-    setsize (self, '-32 -32 -32', '32 32 8');       
+    setmodel(self, "progs/4lt/base.mdl");
+    setsize (self, '-16 -16 -16', '16 16 8');       
     self.avelocity = '0 0 0';
     self.solid = SOLID_BBOX;
     self.movetype = MOVETYPE_FLY;
@@ -390,7 +390,7 @@ void() trap_turret_solid = {
     }
     
     barrel = spawn();
-    setmodel(barrel, "progs/dog.mdl");
+    setmodel(barrel, "progs/4lt/barrel.mdl");
     barrel.solid = SOLID_NOT;
     barrel.movetype = MOVETYPE_FLY;
     barrel.origin = self.origin;
