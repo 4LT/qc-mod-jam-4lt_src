@@ -327,7 +327,7 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     apply_avel_y = self.speed * fourl_sign(dangles_y);
     apply_avel_z = 0;
 
-    if (travel_time_x < FOURL_TURRET_ACTIVE_PERIOD) {
+    if (travel_time_x < FOURL_TURRET_ACTIVE_PERIOD/2) {
         apply_angles_x = dest_angles_x;
         apply_angles_y = self.goalentity.angles_y;
         apply_angles_z = 0;
@@ -336,7 +336,7 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
         snap_pitch = TRUE;
     }
 
-    if (travel_time_y < FOURL_TURRET_ACTIVE_PERIOD) {
+    if (travel_time_y < FOURL_TURRET_ACTIVE_PERIOD/2) {
         apply_angles_x = self.goalentity.angles_x;
         apply_angles_y = dest_angles_y;
         apply_angles_z = 0;
