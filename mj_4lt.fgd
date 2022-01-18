@@ -593,6 +593,7 @@
     wait(float) : "Min. time between shots" : "0.3"
     waitmin(float) : "Wake radius" : "1500"
     waitmax(float) : "Tracking radius" : "2000"
+    delay(float) : "Delay before firing targets" : "0"
     spawnflags(flags) = [ 1: "Start off" : 0 ]
 ]
 
