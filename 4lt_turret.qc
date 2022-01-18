@@ -76,6 +76,10 @@ vector(vector muzzle_pos) FourL_TurretLeadTarget = {
     vector targ_pos, roots;
     float a, b, c, dt;
 
+    if (!(self.enemy.flags & FL_ONGROUND)) {
+        vel_z = 0;
+    }
+
     if (vel == '0 0 0') {
         targ_pos = self.enemy.origin;
     } else {
