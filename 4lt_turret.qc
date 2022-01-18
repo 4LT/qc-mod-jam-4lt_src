@@ -36,6 +36,8 @@ void(entity target_player) FourL_TurretSetTarget = {
     self.enemy = target_player;
     self.cnt = FOURL_TURRET_FORGET_CT;
     self.state = FOURL_STATE_TARGETTING;
+    activator = self.enemy;
+    SUB_UseTargets();
 };
 
 void() FourL_TurretTargetUpdateHidden = {
