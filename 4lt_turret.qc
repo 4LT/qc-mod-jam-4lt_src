@@ -29,6 +29,9 @@ float FOURL_STATE_TARGET_HIDDEN = 3;
 
 float FOURL_FLAG_START_OFF = 1;
 
+float FOURL_LIGHT_ON = 0;
+float FOURL_LIGHT_OFF = 1;
+
 void(entity target_player) FourL_TurretSetTarget = {
     self.enemy = target_player;
     self.cnt = FOURL_TURRET_FORGET_CT;
@@ -352,7 +355,13 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
 
 void() FourL_Turret2Use = {
     FourL_TurretUse();
-    FourL_Turret2ApplyAngVel('0 0 0');
+    
+    if (self.think == self.think1) {
+        self.goalentity.skin = FOURL_LIGHT_ON;
+    } else {
+        FourL_Turret2ApplyAngVel('0 0 0');
+        self.goalentity.skin = FOURL_LIGHT_OFF;
+    }
 };
 
 void() trap_turret_solid = {
@@ -404,5 +413,6 @@ void() trap_turret_solid = {
 
     if (self.spawnflags & FOURL_FLAG_START_OFF) {
         self.think = SUB_Null;
+        self.goalentity.skin = FOURL_LIGHT_OFF;
     }
 };
