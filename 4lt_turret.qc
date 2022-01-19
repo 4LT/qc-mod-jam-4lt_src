@@ -109,7 +109,7 @@ vector(float barrel_len, vector target_dir) FourL_MuzzlePos = {
 
 void(vector pos, vector dir) FourL_TurretFire = {
     LaunchLaser(pos, dir);
-    sound(self, CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM);
+    sound(self.goalentity, CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM);
 };
 
 vector() FourL_TurretUpdateTarget = {
@@ -364,9 +364,11 @@ void() FourL_Turret2Use = {
     
     if (self.think == self.think1) {
         self.goalentity.skin = FOURL_LIGHT_ON;
+        sound(self, CHAN_VOICE, "4lt/beep_s.wav", 1, ATTN_NORM);
     } else {
         FourL_Turret2ApplyAngVel('0 0 0');
         self.goalentity.skin = FOURL_LIGHT_OFF;
+        sound(self, CHAN_VOICE, "4lt/beep_f.wav", 1, ATTN_NORM);
     }
 };
 
@@ -375,6 +377,8 @@ void() trap_turret_solid = {
 
     precache_sound("enforcer/enfire.wav");
     precache_sound("enforcer/enfstop.wav");
+    precache_sound("4lt/beep_s.wav");
+    precache_sound("4lt/beep_f.wav");
     precache_model("progs/4lt/base.mdl");
     precache_model("progs/4lt/barrel.mdl");
     precache_model("progs/laser.mdl");
