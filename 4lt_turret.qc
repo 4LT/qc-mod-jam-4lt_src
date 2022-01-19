@@ -12,6 +12,7 @@ float FOURL_TURRET_TRACK_RADIUS = 2000;
 float FOURL_TURRET_SEARCH_PERIOD = 0.1;
 float FOURL_TURRET_ACTIVE_PERIOD = 0.1;
 float FOURL_TURRET_TURN_SPEED = 100;
+float FOURL_TURRET_TURN_SPEED_NM = 150;
 // Number of times to look for targetted player
 float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_PERIOD);
 
@@ -284,10 +285,16 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     vector dest_angles, dest_angles2, dangles, dangles2, travel_time,
         apply_avel, apply_angles, target_dir;
     float max_dangle, max_dangle2, snap_pitch, snap_yaw, pitch_in_bounds,
-          pitch_lower, pitch_upper;
+          pitch_lower, pitch_upper, turn_speed;
 
     if (!self.enemy) {
         return FALSE;
+    }
+
+    if (skill < 3) {
+        turn_speed = FOURL_TURRET_TURN_SPEED;
+    } else {
+        turn_speed = FOURL_TURRET_TURN_SPEED_NM;
     }
 
     target_dir = FourL_TurretLeadTarget(apprx_muzzle_pos);
@@ -329,11 +336,11 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
         dest_angles = dest_angles2;
     }
 
-    travel_time_x = fabs(dangles_x / self.speed);
-    travel_time_y = fabs(dangles_y / self.speed);
+    travel_time_x = fabs(dangles_x / turn_speed);
+    travel_time_y = fabs(dangles_y / turn_speed);
 
-    apply_avel_x = self.speed * fourl_sign(dangles_x);
-    apply_avel_y = self.speed * fourl_sign(dangles_y);
+    apply_avel_x = turn_speed * fourl_sign(dangles_x);
+    apply_avel_y = turn_speed * fourl_sign(dangles_y);
     apply_avel_z = 0;
 
     if (travel_time_x < FOURL_TURRET_ACTIVE_PERIOD/2) {
@@ -390,8 +397,7 @@ void() trap_turret_solid = {
     self.state = FOURL_STATE_WAITING;
     self.enemy = world;
     self.use = FourL_Turret2Use;
-    self.speed = FOURL_TURRET_TURN_SPEED;
-   
+
     if (self.wait == 0) {
         self.wait = 0.3;
     }
