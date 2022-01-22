@@ -75,11 +75,18 @@ void() FourL_TurretUse = {
 };
 
 vector(vector muzzle_pos) FourL_TurretLeadTarget = {
-    vector vel = self.enemy.velocity;
-    vector targ_pos, roots;
+    entity plat = self.enemy.groundentity;
+    vector targ_pos, roots, vel;
+    float enemy_on_ground = self.enemy.flags & FL_ONGROUND;
     float a, b, c, dt;
 
-    if (!(self.enemy.flags & FL_ONGROUND)) {
+    if (plat && plat.movetype == MOVETYPE_PUSH && enemy_on_ground) {
+        vel = self.enemy.velocity + plat.velocity;
+    } else {
+        vel = self.enemy.velocity;
+    }
+
+    if (!enemy_on_ground) {
         vel_z = 0;
     }
 
