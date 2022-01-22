@@ -123,6 +123,9 @@ vector() FourL_TurretUpdateTarget = {
         target = self.enemy;
     } else {
         target = checkclient();
+        if ((target.items & IT_INVISIBILITY) || (target.flags & FL_NOTARGET)) {
+            return '0 0 0';
+        }
     }
 
     displacement = target.origin - self.origin;
@@ -393,7 +396,7 @@ void() trap_turret_solid = {
     setsize (self, '-16 -16 -16', '16 16 8');       
     self.avelocity = '0 0 0';
     self.solid = SOLID_BBOX;
-    self.movetype = MOVETYPE_FLY;
+    self.movetype = MOVETYPE_NONE;
     self.state = FOURL_STATE_WAITING;
     self.enemy = world;
     self.use = FourL_Turret2Use;
