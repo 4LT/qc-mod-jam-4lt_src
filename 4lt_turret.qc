@@ -4,6 +4,7 @@ vector(float a, float b, float c) fourl_quadratic;
 float(float x) fourl_sign;
 vector(vector in) fourl_normalize_delta_angles;
 float(float a, float b) fourl_max;
+float(float a, float b) fourl_min;
 
 // -- Constants --
 
@@ -32,6 +33,9 @@ float FOURL_FLAG_START_OFF = 1;
 
 float FOURL_LIGHT_ON = 0;
 float FOURL_LIGHT_OFF = 1;
+
+// Max distance to project player to move
+float FOURL_MAX_PROJ_DIST = 350;
 
 void(entity target_player) FourL_TurretSetTarget = {
     self.enemy = target_player;
@@ -78,7 +82,7 @@ vector(vector muzzle_pos) FourL_TurretLeadTarget = {
     entity plat = self.enemy.groundentity;
     vector targ_pos, roots, vel;
     float enemy_on_ground = self.enemy.flags & FL_ONGROUND;
-    float a, b, c, dt;
+    float a, b, c, dt, max_dt;
 
     if (plat && plat.movetype == MOVETYPE_PUSH && enemy_on_ground) {
         vel = self.enemy.velocity + plat.velocity;
@@ -100,7 +104,14 @@ vector(vector muzzle_pos) FourL_TurretLeadTarget = {
             - 2 * self.enemy.origin * muzzle_pos; 
 
         roots = fourl_quadratic(a, b, c);
-        dt = roots_y;
+        max_dt = self.t_length / vlen(vel);
+
+        if (roots_z == 0) {
+            dt = fourl_min(max_dt, roots_y);
+        } else {
+            dt = max_dt;
+        }
+
         targ_pos = self.enemy.origin + vel * dt;
     }
 
@@ -224,6 +235,10 @@ void() trap_turret_point = {
 
     if (self.waitmax < self.waitmin) {
         self.waitmax = self.waitmin;
+    }
+
+    if (self.t_length <= 0) {
+        self.t_length = FOURL_MAX_PROJ_DIST;
     }
 
     self.nextthink = 0.3;
@@ -422,6 +437,10 @@ void() trap_turret_solid = {
 
     if (self.waitmax < self.waitmin) {
         self.waitmax = self.waitmin;
+    }
+
+    if (self.t_length <= 0) {
+        self.t_length = FOURL_MAX_PROJ_DIST;
     }
     
     barrel = spawn();
