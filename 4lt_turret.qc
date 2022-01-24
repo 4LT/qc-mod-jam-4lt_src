@@ -418,7 +418,7 @@ void() trap_turret_solid = {
     setsize (self, '-16 -16 -16', '16 16 8');       
     self.avelocity = '0 0 0';
     self.solid = SOLID_BBOX;
-    self.movetype = MOVETYPE_NONE;
+    self.movetype = MOVETYPE_NOCLIP;
     self.state = FOURL_STATE_WAITING;
     self.enemy = world;
     self.use = FourL_Turret2Use;
@@ -446,7 +446,7 @@ void() trap_turret_solid = {
     barrel = spawn();
     setmodel(barrel, "progs/4lt/barrel.mdl");
     barrel.solid = SOLID_NOT;
-    barrel.movetype = MOVETYPE_FLY;
+    barrel.movetype = MOVETYPE_NOCLIP;
     barrel.origin = self.origin;
     barrel.owner = self;
     self.goalentity = barrel;
