@@ -212,12 +212,10 @@ void() FourL_TurretThink = {
     self.think = self.think1;
 };
 
-void() trap_turret_point = {
-    precache_model("progs/s_light.spr");
+void() FourL_TurretInit = {
     precache_sound("enforcer/enfire.wav");
     precache_sound("enforcer/enfstop.wav");
     precache_model("progs/laser.mdl");
-    setmodel(self, "progs/s_light.spr");
 
     if (self.wait == 0) {
         self.wait = 0.3;
@@ -226,7 +224,6 @@ void() trap_turret_point = {
     self.pausetime = 0;
     self.enemy = world;
     self.state = FOURL_STATE_WAITING;
-    self.use = FourL_TurretUse;
 
     if (self.waitmin <= 0) {
         self.waitmin = FOURL_TURRET_WAKE_RADIUS;
@@ -243,6 +240,14 @@ void() trap_turret_point = {
     if (self.t_length <= 0) {
         self.t_length = FOURL_MAX_PROJ_DIST;
     }
+};
+
+void() trap_turret_point = {
+    FourL_TurretInit();
+
+    precache_model("progs/s_light.spr");
+    setmodel(self, "progs/s_light.spr");
+    self.use = FourL_TurretUse;
 
     self.nextthink = 0.3;
     self.think = self.think1 = FourL_TurretThink;
@@ -410,42 +415,19 @@ void() FourL_Turret2Use = {
 void() trap_turret_solid = {
     entity barrel;
 
-    precache_sound("enforcer/enfire.wav");
-    precache_sound("enforcer/enfstop.wav");
+    FourL_TurretInit();
+
     precache_sound("4lt/beep_s.wav");
     precache_sound("4lt/beep_f.wav");
     precache_model("progs/4lt/base.mdl");
     precache_model("progs/4lt/barrel.mdl");
-    precache_model("progs/laser.mdl");
     setmodel(self, "progs/4lt/base.mdl");
     setsize (self, '-16 -16 -16', '16 16 8');       
     self.avelocity = '0 0 0';
     self.solid = SOLID_BBOX;
     self.movetype = MOVETYPE_NOCLIP;
-    self.state = FOURL_STATE_WAITING;
-    self.enemy = world;
     self.use = FourL_Turret2Use;
 
-    if (self.wait == 0) {
-        self.wait = 0.3;
-    }
-
-    if (self.waitmin <= 0) {
-        self.waitmin = FOURL_TURRET_WAKE_RADIUS;
-    }
-
-    if (self.waitmax <= 0) {
-        self.waitmax = FOURL_TURRET_TRACK_RADIUS;
-    }
-
-    if (self.waitmax < self.waitmin) {
-        self.waitmax = self.waitmin;
-    }
-
-    if (self.t_length <= 0) {
-        self.t_length = FOURL_MAX_PROJ_DIST;
-    }
-    
     barrel = spawn();
     setmodel(barrel, "progs/4lt/barrel.mdl");
     barrel.solid = SOLID_NOT;
