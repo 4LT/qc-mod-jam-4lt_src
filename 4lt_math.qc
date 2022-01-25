@@ -30,7 +30,7 @@ float(float x, float iterations) fourl_newton_sqrt {
     return approx;
 };
 
-vector(float a, float b, float c) fourl_quadratic {
+vector(float a, float b, float c, float iterations) fourl_quadratic {
     float det, det_sqrt;
     vector ret_vec;
 
@@ -40,7 +40,7 @@ vector(float a, float b, float c) fourl_quadratic {
     }
 
     ret_vec = '0 0 0';
-    det_sqrt = fourl_newton_sqrt(det, 80);
+    det_sqrt = fourl_newton_sqrt(det, iterations);
     ret_vec_x = (-b + det_sqrt) / 2 / a;
     ret_vec_y = (-b - det_sqrt) / 2 / a;
 

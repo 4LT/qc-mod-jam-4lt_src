@@ -1,6 +1,6 @@
 // -- Forward declarations --
 
-vector(float a, float b, float c) fourl_quadratic;
+vector(float a, float b, float c, float iterations) fourl_quadratic;
 float(float x) fourl_sign;
 vector(vector in) fourl_normalize_delta_angles;
 float(float a, float b) fourl_max;
@@ -16,6 +16,8 @@ float FOURL_TURRET_TURN_SPEED = 100;
 float FOURL_TURRET_TURN_SPEED_NM = 150;
 // Number of times to look for targetted player
 float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_PERIOD);
+// 70 iterations is hopefully sufficiently accurate
+float FOURL_TURRET_LEAD_ITERATIONS = 70;
 
 // Limit pitch angle of barrel
 float FOURL_BARREL_PITCH_LIM = 0;
@@ -33,6 +35,7 @@ float FOURL_FLAG_START_OFF = 1;
 
 float FOURL_LIGHT_ON = 0;
 float FOURL_LIGHT_OFF = 1;
+
 
 // Max distance to project player to move
 float FOURL_MAX_PROJ_DIST = 350;
@@ -103,7 +106,7 @@ vector(vector muzzle_pos) FourL_TurretLeadTarget = {
             + muzzle_pos * muzzle_pos
             - 2 * self.enemy.origin * muzzle_pos; 
 
-        roots = fourl_quadratic(a, b, c);
+        roots = fourl_quadratic(a, b, c, FOURL_TURRET_LEAD_ITERATIONS);
         max_dt = self.t_length / vlen(vel);
 
         if (roots_z == 0) {
