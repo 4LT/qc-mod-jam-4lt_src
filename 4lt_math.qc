@@ -1,6 +1,10 @@
 float FOURL_MIN_ANG = -180;
 float FOURL_MAX_ANG = 180;
 
+/*
+ * Approximate sqrt using Newton's method
+ * Higher number of iterations = slower, but more accurate
+ */
 float(float x, float iterations) fourl_newton_sqrt {
     float approx, pty, ptx, slope;
 
@@ -30,6 +34,14 @@ float(float x, float iterations) fourl_newton_sqrt {
     return approx;
 };
 
+/* Find the roots to a quadratic equation
+ * a - Quadratic coefficient
+ * b - Linear coefficient
+ * c - Constant coefficient
+ * iterations - Impacts accuracy
+ *
+ * Roots are returned as _x and _y of vector, or 1 is returned for _z of vector
+ */
 vector(float a, float b, float c, float iterations) fourl_quadratic {
     float det, det_sqrt;
     vector ret_vec;
@@ -47,6 +59,8 @@ vector(float a, float b, float c, float iterations) fourl_quadratic {
     return ret_vec;
 };
 
+/* -1 for negative values of x, 1 for positive values, and 0 when x == 0
+ */
 float(float x) fourl_sign = {
     if (x < 0) {
         return -1;
@@ -57,6 +71,8 @@ float(float x) fourl_sign = {
     }
 };
 
+/* Return the higher of two numbers
+ */
 float(float a, float b) fourl_max = {
     if (a > b) {
         return a;
@@ -65,6 +81,8 @@ float(float a, float b) fourl_max = {
     }
 };
 
+/* Return the lower of two numbers
+ */
 float(float a, float b) fourl_min = {
     if (a < b) {
         return a;
@@ -73,34 +91,29 @@ float(float a, float b) fourl_min = {
     }
 };
 
+/* Return the modulus of a over b.
+ * Essentially, a sawtooth function of "a" with an amplitude and wavelength of
+ * "b"
+ */
 float(float a, float b) fourl_mod = {
     return a - floor(a / b) * b;
 };
 
+/* Return a number min and max from in. If "in" is outside the range, change
+ * "in" by a multiple of (max - min) such that it  fits the range. Lower bound
+ * (min) is inclusive, upper bound (max) is exclusive.
+ */
 float(float in, float min, float max) fourl_wrap = {
     return fourl_mod(in - min, max - min) + min;
 };
 
-vector(vector in) fourl_normalize_angles = {
-    vector out;
-    out_x = fourl_wrap(in_x, FOURL_MIN_ANG, FOURL_MAX_ANG);
-    
-    if (out_x < -90 || out_x > 90) {
-        if (out_x < -90) {
-            out_x = -180 - out_x;
-        } else {
-            out_x = 180 - out_x;
-        }
-        out_y+= 180;
-        out_z+= 180;
-    }
-
-    out_y = fourl_wrap(in_y, FOURL_MIN_ANG, FOURL_MAX_ANG);
-    out_z = fourl_wrap(in_z, FOURL_MIN_ANG, FOURL_MAX_ANG);
-
-    return out;
-};
-
+/* Takes an angular displacement vector, and returns an angular displacement
+ * vector that represents the smallest change in angles (by magnitude) required
+ * to rotate something into the same position the original vector would have
+ * rotated the thing.
+ *
+ * i.e. don't rotate 361 degrees CW when we can rotate 1 degree CCW
+ */
 vector(vector in) fourl_normalize_delta_angles = {
     vector out;
     out_x = fourl_wrap(in_x, FOURL_MIN_ANG, FOURL_MAX_ANG);
