@@ -36,5 +36,5 @@ oldone.qc		// registered
 
 // Mod files
 
-4lt_turret.qc
-4lt_math.qc
+turret.qc
+math.qc

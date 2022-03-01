@@ -1,54 +1,54 @@
 // -- Forward declarations --
 
-vector(float a, float b, float c, float iterations) fourl_quadratic;
-float(float x) fourl_sign;
-vector(vector in) fourl_normalize_delta_angles;
-float(float a, float b) fourl_max;
-float(float a, float b) fourl_min;
+vector(float a, float b, float c, float iterations) quadratic;
+float(float x) sign;
+vector(vector in) normalize_delta_angles;
+float(float a, float b) max;
+float(float a, float b) min;
 
 // -- Constants --
 
-float FOURL_TURRET_WAKE_RADIUS = 1500;
-float FOURL_TURRET_TRACK_RADIUS = 2000;
-float FOURL_TURRET_SEARCH_PERIOD = 0.1;
-float FOURL_TURRET_ACTIVE_PERIOD = 0.1;
-float FOURL_TURRET_TURN_SPEED = 100;
-float FOURL_TURRET_TURN_SPEED_NM = 150;
+float TURRET_WAKE_RADIUS = 1500;
+float TURRET_TRACK_RADIUS = 2000;
+float TURRET_SEARCH_PERIOD = 0.1;
+float TURRET_ACTIVE_PERIOD = 0.1;
+float TURRET_TURN_SPEED = 100;
+float TURRET_TURN_SPEED_NM = 150;
 // Number of times to look for targetted player
-float FOURL_TURRET_FORGET_CT = floor(3.0 / FOURL_TURRET_ACTIVE_PERIOD);
+float TURRET_FORGET_CT = floor(3.0 / TURRET_ACTIVE_PERIOD);
 // 70 iterations is hopefully sufficiently accurate
-float FOURL_TURRET_LEAD_ITERATIONS = 70;
+float TURRET_LEAD_ITERATIONS = 70;
 
 // Limit pitch angle of barrel
-float FOURL_BARREL_PITCH_LIM = 0;
-float FOURL_BARREL_LENGTH = 24;
+float BARREL_PITCH_LIM = 0;
+float BARREL_LENGTH = 24;
 
 // From LaunchLaser
-float FOURL_LASER_SPEED = 600;
+float LASER_SPEED = 600;
 
-float FOURL_STATE_ASLEEP = 0;
-float FOURL_STATE_WAITING = 1;
-float FOURL_STATE_TARGETTING = 2;
-float FOURL_STATE_TARGET_HIDDEN = 3;
+float STATE_ASLEEP = 0;
+float STATE_WAITING = 1;
+float STATE_TARGETTING = 2;
+float STATE_TARGET_HIDDEN = 3;
 
-float FOURL_FLAG_START_OFF = 1;
+float FLAG_START_OFF = 1;
 
-float FOURL_LIGHT_ON = 0;
-float FOURL_LIGHT_OFF = 1;
+float LIGHT_ON = 0;
+float LIGHT_OFF = 1;
 
 
 // Max distance to project player to move
-float FOURL_MAX_PROJ_DIST = 350;
+float MAX_PROJ_DIST = 350;
 
-void(entity target_player) FourL_TurretSetTarget = {
+void(entity target_player) TurretSetTarget = {
     self.enemy = target_player;
-    self.cnt = FOURL_TURRET_FORGET_CT;
-    self.state = FOURL_STATE_TARGETTING;
+    self.cnt = TURRET_FORGET_CT;
+    self.state = STATE_TARGETTING;
     activator = self.enemy;
     SUB_UseTargets();
 };
 
-void() FourL_TurretTargetUpdateHidden = {
+void() TurretTargetUpdateHidden = {
     entity traced, target;
 
     // Look for a new target
@@ -58,7 +58,7 @@ void() FourL_TurretTargetUpdateHidden = {
 
     if (traced.classname == "player") {
         // sets state to TARGETTING
-        FourL_TurretSetTarget(traced);
+        TurretSetTarget(traced);
         return;
     }
 
@@ -66,13 +66,13 @@ void() FourL_TurretTargetUpdateHidden = {
 
     if (self.cnt <= 0) {
         self.enemy = world;
-        self.state = FOURL_STATE_WAITING;
+        self.state = STATE_WAITING;
     } else {
-        self.state = FOURL_STATE_TARGET_HIDDEN;
+        self.state = STATE_TARGET_HIDDEN;
     }
 };
 
-void() FourL_TurretUse = {
+void() TurretUse = {
     if (self.think == self.think1) {
         self.think = SUB_Null;
     } else {
@@ -81,7 +81,7 @@ void() FourL_TurretUse = {
     }
 };
 
-vector(vector muzzle_pos) FourL_TurretLeadTarget = {
+vector(vector muzzle_pos) TurretLeadTarget = {
     entity plat = self.enemy.groundentity;
     vector targ_pos, roots, vel;
     float enemy_on_ground = self.enemy.flags & FL_ONGROUND;
@@ -100,17 +100,17 @@ vector(vector muzzle_pos) FourL_TurretLeadTarget = {
     if (vel == '0 0 0') {
         targ_pos = self.enemy.origin;
     } else {
-        a = vel * vel - FOURL_LASER_SPEED * FOURL_LASER_SPEED;
+        a = vel * vel - LASER_SPEED * LASER_SPEED;
         b = 2 * vel * (self.enemy.origin - muzzle_pos);
         c = self.enemy.origin * self.enemy.origin
             + muzzle_pos * muzzle_pos
             - 2 * self.enemy.origin * muzzle_pos; 
 
-        roots = fourl_quadratic(a, b, c, FOURL_TURRET_LEAD_ITERATIONS);
+        roots = quadratic(a, b, c, TURRET_LEAD_ITERATIONS);
         max_dt = self.t_length / vlen(vel);
 
         if (roots_z == 0) {
-            dt = fourl_min(max_dt, roots_y);
+            dt = min(max_dt, roots_y);
         } else {
             dt = max_dt;
         }
@@ -125,16 +125,16 @@ vector(vector muzzle_pos) FourL_TurretLeadTarget = {
 // (assume target won't move)
 //
 // Reasonable approx. if target distance >> barrel length
-vector(float barrel_len, vector target_dir) FourL_MuzzlePos = {
+vector(float barrel_len, vector target_dir) MuzzlePos = {
     return target_dir * barrel_len + self.origin;
 };
 
-void(vector pos, vector dir) FourL_TurretFire = {
+void(vector pos, vector dir) TurretFire = {
     LaunchLaser(pos, dir);
     sound(self.goalentity, CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM);
 };
 
-vector() FourL_TurretUpdateTarget = {
+vector() TurretUpdateTarget = {
     vector displacement, direction;
     float distance;
     float in_range;
@@ -166,7 +166,7 @@ vector() FourL_TurretUpdateTarget = {
         traced = trace_ent;
     } else {
         if (self.enemy) {
-            FourL_TurretTargetUpdateHidden();
+            TurretTargetUpdateHidden();
         }
 
         return direction;
@@ -174,13 +174,13 @@ vector() FourL_TurretUpdateTarget = {
 
     if (self.enemy) {
         if (traced.classname == "player") {
-            FourL_TurretSetTarget(traced);
+            TurretSetTarget(traced);
         } else {
-            FourL_TurretTargetUpdateHidden();
+            TurretTargetUpdateHidden();
         }
     } else {
         if (traced.classname == "player") {
-            FourL_TurretSetTarget(traced);
+            TurretSetTarget(traced);
         }
     }
 
@@ -191,28 +191,28 @@ vector() FourL_TurretUpdateTarget = {
     }
 };
 
-void() FourL_TurretThink = {
+void() TurretThink = {
     // Find a target
-    vector target_dir = FourL_TurretUpdateTarget();
+    vector target_dir = TurretUpdateTarget();
 
     // Try to fire if target was found and visible
     if (target_dir != '0 0 0') {
-        if (time > self.pausetime && self.state == FOURL_STATE_TARGETTING) {
-            FourL_TurretFire(self.origin, FourL_TurretLeadTarget(self.origin));
+        if (time > self.pausetime && self.state == STATE_TARGETTING) {
+            TurretFire(self.origin, TurretLeadTarget(self.origin));
             self.pausetime = time + self.wait;
         }
     }
 
     // Set up next think; save frames if there's no target
     if (self.enemy) {
-        self.nextthink = time + FOURL_TURRET_ACTIVE_PERIOD;
+        self.nextthink = time + TURRET_ACTIVE_PERIOD;
     } else {
-        self.nextthink = time + FOURL_TURRET_SEARCH_PERIOD;
+        self.nextthink = time + TURRET_SEARCH_PERIOD;
     }
     self.think = self.think1;
 };
 
-void() FourL_TurretInit = {
+void() TurretInit = {
     precache_sound("enforcer/enfire.wav");
     precache_sound("enforcer/enfstop.wav");
     precache_model("progs/laser.mdl");
@@ -223,14 +223,14 @@ void() FourL_TurretInit = {
 
     self.pausetime = 0;
     self.enemy = world;
-    self.state = FOURL_STATE_WAITING;
+    self.state = STATE_WAITING;
 
     if (self.waitmin <= 0) {
-        self.waitmin = FOURL_TURRET_WAKE_RADIUS;
+        self.waitmin = TURRET_WAKE_RADIUS;
     }
 
     if (self.waitmax <= 0) {
-        self.waitmax = FOURL_TURRET_TRACK_RADIUS;
+        self.waitmax = TURRET_TRACK_RADIUS;
     }
 
     if (self.waitmax < self.waitmin) {
@@ -238,67 +238,67 @@ void() FourL_TurretInit = {
     }
 
     if (self.t_length <= 0) {
-        self.t_length = FOURL_MAX_PROJ_DIST;
+        self.t_length = MAX_PROJ_DIST;
     }
 };
 
 void() trap_turret_point = {
-    FourL_TurretInit();
+    TurretInit();
 
     precache_model("progs/s_light.spr");
     setmodel(self, "progs/s_light.spr");
-    self.use = FourL_TurretUse;
+    self.use = TurretUse;
 
     self.nextthink = 0.3;
-    self.think = self.think1 = FourL_TurretThink;
+    self.think = self.think1 = TurretThink;
 
-    if (self.spawnflags & FOURL_FLAG_START_OFF) {
+    if (self.spawnflags & FLAG_START_OFF) {
         self.think = SUB_Null;
     }
 };
 
-void(vector my_angles) FourL_Turret2ApplyAngles = {
+void(vector my_angles) Turret2ApplyAngles = {
     self.angles = my_angles;
     self.angles_x = 0;
     self.angles_z = 0;
     self.goalentity.angles = my_angles;
 };
 
-void(vector angvel) FourL_Turret2ApplyAngVel = {
+void(vector angvel) Turret2ApplyAngVel = {
     self.avelocity = angvel;
     self.avelocity_x = 0;
     self.avelocity_z = 0;
     self.goalentity.avelocity = angvel;
 };
 
-vector(vector dest_angles) FourL_Turret2ComputeDeltaAngles = {
-    return fourl_normalize_delta_angles(
+vector(vector dest_angles) Turret2ComputeDeltaAngles = {
+    return normalize_delta_angles(
         dest_angles - self.goalentity.angles);
 };
 
-float(vector apprx_muzzle_pos) FourL_Turret2Rotate;
+float(vector apprx_muzzle_pos) Turret2Rotate;
 
-void() FourL_Turret2Think = {
+void() Turret2Think = {
     vector muzzle_pos, target_dir;
     float target_locked = FALSE;
 
-    target_dir = FourL_TurretUpdateTarget();
+    target_dir = TurretUpdateTarget();
 
     if (target_dir == '0 0 0') {
         self.avelocity = '0 0 0';
         self.goalentity.avelocity = '0 0 0';
     } else {
-        muzzle_pos = FourL_MuzzlePos(FOURL_BARREL_LENGTH, target_dir);
-        target_locked = FourL_Turret2Rotate(muzzle_pos);
+        muzzle_pos = MuzzlePos(BARREL_LENGTH, target_dir);
+        target_locked = Turret2Rotate(muzzle_pos);
         
         if (target_locked) {
             if (
                 time > self.pausetime
-                && self.state == FOURL_STATE_TARGETTING
+                && self.state == STATE_TARGETTING
             ) {
-                FourL_TurretFire(
+                TurretFire(
                     muzzle_pos,
-                    FourL_TurretLeadTarget(muzzle_pos)
+                    TurretLeadTarget(muzzle_pos)
                 );
                 self.pausetime = time + self.wait;
             }
@@ -307,14 +307,14 @@ void() FourL_Turret2Think = {
 
     // Set up next think; save frames if there's no target
     if (self.enemy) {
-        self.nextthink = time + FOURL_TURRET_ACTIVE_PERIOD;
+        self.nextthink = time + TURRET_ACTIVE_PERIOD;
     } else {
-        self.nextthink = time + FOURL_TURRET_SEARCH_PERIOD;
+        self.nextthink = time + TURRET_SEARCH_PERIOD;
     }
-    self.think = FourL_Turret2Think;
+    self.think = Turret2Think;
 };
 
-float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
+float(vector apprx_muzzle_pos) Turret2Rotate = {
     vector dest_angles, dest_angles2, dangles, dangles2, travel_time,
         apply_avel, apply_angles, target_dir;
     float max_dangle, max_dangle2, snap_pitch, snap_yaw, pitch_in_bounds,
@@ -325,19 +325,19 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     }
 
     if (skill < 3) {
-        turn_speed = FOURL_TURRET_TURN_SPEED;
+        turn_speed = TURRET_TURN_SPEED;
     } else {
-        turn_speed = FOURL_TURRET_TURN_SPEED_NM;
+        turn_speed = TURRET_TURN_SPEED_NM;
     }
 
-    target_dir = FourL_TurretLeadTarget(apprx_muzzle_pos);
+    target_dir = TurretLeadTarget(apprx_muzzle_pos);
 
     snap_pitch = FALSE;
     snap_yaw = FALSE;
 
     dest_angles = vectoangles(target_dir);
-    pitch_lower = FOURL_BARREL_PITCH_LIM;
-    pitch_upper = 180 - FOURL_BARREL_PITCH_LIM;
+    pitch_lower = BARREL_PITCH_LIM;
+    pitch_upper = 180 - BARREL_PITCH_LIM;
 
     if (dest_angles_x > pitch_lower && dest_angles_x < pitch_upper) {
         pitch_in_bounds = FALSE;
@@ -356,13 +356,13 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
         : dest_angles_y - 180;
     dest_angles2_z = 0;
 
-    dangles = fourl_normalize_delta_angles(
+    dangles = normalize_delta_angles(
             dest_angles - self.goalentity.angles);
-    dangles2 = fourl_normalize_delta_angles(
+    dangles2 = normalize_delta_angles(
             dest_angles2 - self.goalentity.angles);
 
-    max_dangle = fourl_max(fabs(dangles_x), fabs(dangles_y));
-    max_dangle2 = fourl_max(fabs(dangles2_x), fabs(dangles2_y));
+    max_dangle = max(fabs(dangles_x), fabs(dangles_y));
+    max_dangle2 = max(fabs(dangles2_x), fabs(dangles2_y));
 
     if (max_dangle2 < max_dangle) {
         dangles = dangles2;
@@ -372,42 +372,42 @@ float(vector apprx_muzzle_pos) FourL_Turret2Rotate = {
     travel_time_x = fabs(dangles_x / turn_speed);
     travel_time_y = fabs(dangles_y / turn_speed);
 
-    apply_avel_x = turn_speed * fourl_sign(dangles_x);
-    apply_avel_y = turn_speed * fourl_sign(dangles_y);
+    apply_avel_x = turn_speed * sign(dangles_x);
+    apply_avel_y = turn_speed * sign(dangles_y);
     apply_avel_z = 0;
 
-    if (travel_time_x < FOURL_TURRET_ACTIVE_PERIOD/2) {
+    if (travel_time_x < TURRET_ACTIVE_PERIOD/2) {
         apply_angles_x = dest_angles_x;
         apply_angles_y = self.goalentity.angles_y;
         apply_angles_z = 0;
         apply_avel_x = 0;
-        FourL_Turret2ApplyAngles(apply_angles);
+        Turret2ApplyAngles(apply_angles);
         snap_pitch = TRUE;
     }
 
-    if (travel_time_y < FOURL_TURRET_ACTIVE_PERIOD/2) {
+    if (travel_time_y < TURRET_ACTIVE_PERIOD/2) {
         apply_angles_x = self.goalentity.angles_x;
         apply_angles_y = dest_angles_y;
         apply_angles_z = 0;
         apply_avel_y = 0;
-        FourL_Turret2ApplyAngles(apply_angles);
+        Turret2ApplyAngles(apply_angles);
         snap_yaw = TRUE;
     }
 
-    FourL_Turret2ApplyAngVel(apply_avel);
+    Turret2ApplyAngVel(apply_avel);
     return snap_pitch && snap_yaw && pitch_in_bounds;
 };
 
 
-void() FourL_Turret2Use = {
-    FourL_TurretUse();
+void() Turret2Use = {
+    TurretUse();
     
     if (self.think == self.think1) {
-        self.goalentity.skin = FOURL_LIGHT_ON;
+        self.goalentity.skin = LIGHT_ON;
         sound(self, CHAN_VOICE, "4lt/beep_s.wav", 1, ATTN_NORM);
     } else {
-        FourL_Turret2ApplyAngVel('0 0 0');
-        self.goalentity.skin = FOURL_LIGHT_OFF;
+        Turret2ApplyAngVel('0 0 0');
+        self.goalentity.skin = LIGHT_OFF;
         sound(self, CHAN_VOICE, "4lt/beep_f.wav", 1, ATTN_NORM);
     }
 };
@@ -415,7 +415,7 @@ void() FourL_Turret2Use = {
 void() trap_turret_solid = {
     entity barrel;
 
-    FourL_TurretInit();
+    TurretInit();
 
     precache_sound("4lt/beep_s.wav");
     precache_sound("4lt/beep_f.wav");
@@ -426,7 +426,7 @@ void() trap_turret_solid = {
     self.avelocity = '0 0 0';
     self.solid = SOLID_BBOX;
     self.movetype = MOVETYPE_NOCLIP;
-    self.use = FourL_Turret2Use;
+    self.use = Turret2Use;
 
     barrel = spawn();
     setmodel(barrel, "progs/4lt/barrel.mdl");
@@ -436,13 +436,13 @@ void() trap_turret_solid = {
     barrel.owner = self;
     self.goalentity = barrel;
 
-    FourL_Turret2ApplyAngles(self.angles);
+    Turret2ApplyAngles(self.angles);
 
-    self.think = self.think1 = FourL_Turret2Think;
+    self.think = self.think1 = Turret2Think;
     self.nextthink = 0.3;
 
-    if (self.spawnflags & FOURL_FLAG_START_OFF) {
+    if (self.spawnflags & FLAG_START_OFF) {
         self.think = SUB_Null;
-        self.goalentity.skin = FOURL_LIGHT_OFF;
+        self.goalentity.skin = LIGHT_OFF;
     }
 };
