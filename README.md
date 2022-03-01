@@ -23,7 +23,7 @@ Run `fteqcc -o progs.dat` from the root directory.
 
 ## Assets
 
-TBD Pending release of Mod Jam 2
+[modjam 2022](http://www.khreathor.xyz/quake_maps/releases/modjam2_ai.zip)
 
 Required files:
 * `sound/4lt/beep_s.wav`
@@ -33,16 +33,13 @@ Required files:
 
 ## Patching
 
-Copy `4lt_math.qc` and `4lt_turret.qc` into your own code base and reference
+Copy `math.qc` and `turret.qc` into your own code base and reference
 them at the end of your `progs.src`, then patch your `client.qc` obituary
-to include `trap_turret_point` and `trap_turret_solid`.  Please, for the sake
-of your code base's readability, strip out the `FourL_`/`fourl_`/`FOURL_`
-prefixes from my functions; these are only a safety mechanism to prevent
-clobbering other functions when included in Mod Jam 2.
+to include `trap_turret_point` and `trap_turret_solid`. 
 
 ## License
 
-`4lt_math.qc` and `4lt_turret.qc` are licensed under CC0
+`math.qc` and `turret.qc` are licensed under CC0
 [linked here](https://creativecommons.org/publicdomain/zero/1.0/]).
 
 The other qc files are... eh, who knows?  GPL presumably, but Id dropped the
