@@ -1,10 +1,43 @@
 float MIN_ANG = -180;
 float MAX_ANG = 180;
 
+
+/*
+ * Find the sqrt of an integer by leveraging vlen in O(x) = log x instructions
+ */
+float(float x) isqrt {
+    float quot, rem, rt;
+
+    quot = floor(x/2);
+    rem = x - quot * 2;
+
+    if (quot > 1) {
+        rt = isqrt(quot);
+        return vlen([rt, rt, rem]);
+    } else {
+        return vlen([quot, quot, rem]);
+    }
+};
+
+/*
+ * Approximate the sqrt of a number in O(x) = log x instructions
+ */
+float(float x) sqrt {
+    // boost precision for low values while avoiding saturation on high values
+    if (x < 256) {
+        return isqrt(rint(x * 256)) / 16;
+    } else if ((x ^ 0) == x) { // check for EXCEEDINGLY large values
+        return isqrt(rint(x));
+    } else {
+        return isqrt(x);
+    }
+};
+
 /*
  * Approximate sqrt using Newton's method
  * Higher number of iterations = slower, but more accurate
  */
+/*
 float(float x, float iterations) newton_sqrt {
     float approx, pty, ptx, slope;
 
@@ -33,16 +66,16 @@ float(float x, float iterations) newton_sqrt {
 
     return approx;
 };
+*/
 
 /* Find the roots to a quadratic equation
  * a - Quadratic coefficient
  * b - Linear coefficient
  * c - Constant coefficient
- * iterations - Impacts accuracy
  *
  * Roots are returned as _x and _y of vector, or 1 is returned for _z of vector
  */
-vector(float a, float b, float c, float iterations) quadratic {
+vector(float a, float b, float c) quadratic {
     float det, det_sqrt;
     vector ret_vec;
 
@@ -52,7 +85,7 @@ vector(float a, float b, float c, float iterations) quadratic {
     }
 
     ret_vec = '0 0 0';
-    det_sqrt = newton_sqrt(det, iterations);
+    det_sqrt = sqrt(det);
     ret_vec_x = (-b + det_sqrt) / 2 / a;
     ret_vec_y = (-b - det_sqrt) / 2 / a;
 

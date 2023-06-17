@@ -1,6 +1,6 @@
 // -- Forward declarations --
 
-vector(float a, float b, float c, float iterations) quadratic;
+vector(float a, float b, float c) quadratic;
 float(float x) sign;
 vector(vector in) normalize_delta_angles;
 float(float a, float b) max;
@@ -16,8 +16,6 @@ float TURRET_TURN_SPEED = 100;
 float TURRET_TURN_SPEED_NM = 150;
 // Number of times to look for targetted player
 float TURRET_FORGET_CT = floor(3.0 / TURRET_ACTIVE_PERIOD);
-// 70 iterations is hopefully sufficiently accurate
-float TURRET_LEAD_ITERATIONS = 70;
 
 // Limit pitch angle of barrel
 float BARREL_PITCH_LIM = 0;
@@ -106,7 +104,7 @@ vector(vector muzzle_pos) TurretLeadTarget = {
             + muzzle_pos * muzzle_pos
             - 2 * self.enemy.origin * muzzle_pos; 
 
-        roots = quadratic(a, b, c, TURRET_LEAD_ITERATIONS);
+        roots = quadratic(a, b, c);
         max_dt = self.t_length / vlen(vel);
 
         if (roots_z == 0) {
