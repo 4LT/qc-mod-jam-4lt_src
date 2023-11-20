@@ -3,7 +3,7 @@ float MAX_ANG = 180;
 
 
 /*
- * Find the sqrt of an integer by leveraging vlen in O(x) = log x instructions
+ * Find the sqrt of an integer by leveraging vlen in O(log x) instructions
  */
 float(float x) isqrt {
     float quot, rem, rt;
@@ -20,7 +20,7 @@ float(float x) isqrt {
 };
 
 /*
- * Approximate the sqrt of a number in O(x) = log x instructions
+ * Approximate the sqrt of a number in O(log x) instructions
  */
 float(float x) sqrt {
     // boost precision for low values while avoiding saturation on high values
